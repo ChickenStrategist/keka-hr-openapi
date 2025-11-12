@@ -1,0 +1,3368 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Keka HR API",
+    "description": "Keka is a leading human resources management system that enables organizations to seamlessly manage diverse aspects of their human resource processes, including recruitment and onboarding, attendance and time management, payroll, expense and performance management.\n\nWith OAuth authentication, rate limiting, pagination, and adherence to industry standards, Keka provides developers with everything they need to build robust integrations with their software/platform and facilitate data exchange between their application and this leading HRMS portal.\n\n**Rate Limiting:** 50 API requests per minute\n**Pagination:** Default page size is 100, default page number is 1\n**Environment:** Sandbox available at signup.keka.com",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Keka Support",
+      "url": "https://developers.keka.com"
+    },
+    "termsOfService": "https://www.keka.com/terms-of-service"
+  },
+  "servers": [
+    {
+      "url": "https://{company}.{environment}.com/api/v1",
+      "description": "Keka API Server",
+      "variables": {
+        "company": {
+          "default": "yourcompany",
+          "description": "Your company subdomain"
+        },
+        "environment": {
+          "default": "keka",
+          "description": "Environment (keka for production, kekademo for sandbox)",
+          "enum": [
+            "keka",
+            "kekademo"
+          ]
+        }
+      }
+    }
+  ],
+  "security": [
+    {
+      "OAuth2": [
+        "kekaapi"
+      ]
+    },
+    {
+      "ApiKeyAuth": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Core HR - Employees",
+      "description": "Employee management endpoints"
+    },
+    {
+      "name": "Core HR - Organization",
+      "description": "Organization structure endpoints (groups, departments, locations, job titles)"
+    },
+    {
+      "name": "Leave",
+      "description": "Leave management endpoints"
+    },
+    {
+      "name": "Attendance",
+      "description": "Time and attendance tracking endpoints"
+    },
+    {
+      "name": "Payroll",
+      "description": "Payroll management endpoints"
+    },
+    {
+      "name": "PSA - Clients",
+      "description": "Professional Services Automation - Client management"
+    },
+    {
+      "name": "PSA - Projects",
+      "description": "Professional Services Automation - Project management"
+    },
+    {
+      "name": "PSA - Tasks",
+      "description": "Professional Services Automation - Task management"
+    },
+    {
+      "name": "PMS",
+      "description": "Performance Management System endpoints"
+    },
+    {
+      "name": "Expense",
+      "description": "Expense management endpoints"
+    },
+    {
+      "name": "Assets",
+      "description": "Asset management endpoints"
+    },
+    {
+      "name": "BGV",
+      "description": "Background Verification endpoints"
+    },
+    {
+      "name": "Documents",
+      "description": "Document management endpoints"
+    }
+  ],
+  "paths": {
+    "/hris/employees": {
+      "get": {
+        "tags": [
+          "Core HR - Employees"
+        ],
+        "summary": "Get all employees",
+        "description": "Retrieves a list of all employees in the organization",
+        "operationId": "getAllEmployees",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageNumber"
+          },
+          {
+            "$ref": "#/components/parameters/PageSize"
+          },
+          {
+            "name": "employeeIds",
+            "in": "query",
+            "description": "Filter by specific employee IDs",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "lastModified",
+            "in": "query",
+            "description": "Filter by last modified date",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmployeeListResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Core HR - Employees"
+        ],
+        "summary": "Create an employee",
+        "description": "Creates a new employee record",
+        "operationId": "createEmployee",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmployeeCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Employee created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Employee"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          }
+        }
+      }
+    },
+    "/hris/employees/{id}": {
+      "get": {
+        "tags": [
+          "Core HR - Employees"
+        ],
+        "summary": "Get an employee by ID",
+        "description": "Retrieves a specific employee's details",
+        "operationId": "getEmployeeById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Employee ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Employee"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          }
+        }
+      }
+    },
+    "/hris/employees/updatefields": {
+      "get": {
+        "tags": [
+          "Core HR - Employees"
+        ],
+        "summary": "Get all update fields",
+        "description": "Retrieves all available fields that can be updated for employees",
+        "operationId": "getEmployeeUpdateFields",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    },
+                    "succeeded": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          }
+        }
+      }
+    },
+    "/hris/employees/{id}/personaldetails": {
+      "put": {
+        "tags": [
+          "Core HR - Employees"
+        ],
+        "summary": "Update employee personal details",
+        "description": "Updates the personal details of a specific employee",
+        "operationId": "updateEmployeePersonalDetails",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Employee ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmployeePersonalDetails"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Personal details updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          }
+        }
+      }
+    },
+    "/hris/employees/{id}/jobdetails": {
+      "put": {
+        "tags": [
+          "Core HR - Employees"
+        ],
+        "summary": "Update employee job details",
+        "description": "Updates the job details of a specific employee",
+        "operationId": "updateEmployeeJobDetails",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Employee ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmployeeJobDetails"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Job details updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          }
+        }
+      }
+    },
+    "/hris/groups": {
+      "get": {
+        "tags": [
+          "Core HR - Organization"
+        ],
+        "summary": "Get all groups",
+        "description": "Retrieves all employee groups",
+        "operationId": "getAllGroups",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageNumber"
+          },
+          {
+            "$ref": "#/components/parameters/PageSize"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          }
+        }
+      }
+    },
+    "/hris/grouptypes": {
+      "get": {
+        "tags": [
+          "Core HR - Organization"
+        ],
+        "summary": "Get all group types",
+        "description": "Retrieves all group types",
+        "operationId": "getAllGroupTypes",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageNumber"
+          },
+          {
+            "$ref": "#/components/parameters/PageSize"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          }
+        }
+      }
+    },
+    "/hris/departments": {
+      "get": {
+        "tags": [
+          "Core HR - Organization"
+        ],
+        "summary": "Get all departments",
+        "description": "Retrieves all departments",
+        "operationId": "getAllDepartments",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageNumber"
+          },
+          {
+            "$ref": "#/components/parameters/PageSize"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          }
+        }
+      }
+    },
+    "/hris/locations": {
+      "get": {
+        "tags": [
+          "Core HR - Organization"
+        ],
+        "summary": "Get all locations",
+        "description": "Retrieves all office locations",
+        "operationId": "getAllLocations",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageNumber"
+          },
+          {
+            "$ref": "#/components/parameters/PageSize"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          }
+        }
+      }
+    },
+    "/hris/jobtitles": {
+      "get": {
+        "tags": [
+          "Core HR - Organization"
+        ],
+        "summary": "Get all job titles",
+        "description": "Retrieves all job titles",
+        "operationId": "getAllJobTitles",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageNumber"
+          },
+          {
+            "$ref": "#/components/parameters/PageSize"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          }
+        }
+      }
+    },
+    "/hris/currencies": {
+      "get": {
+        "tags": [
+          "Core HR - Organization"
+        ],
+        "summary": "Get all currencies",
+        "description": "Retrieves all available currencies",
+        "operationId": "getAllCurrencies",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageNumber"
+          },
+          {
+            "$ref": "#/components/parameters/PageSize"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          }
+        }
+      }
+    },
+    "/hris/noticeperiods": {
+      "get": {
+        "tags": [
+          "Core HR - Organization"
+        ],
+        "summary": "Get all notice periods",
+        "description": "Retrieves all notice period configurations",
+        "operationId": "getAllNoticePeriods",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageNumber"
+          },
+          {
+            "$ref": "#/components/parameters/PageSize"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          }
+        }
+      }
+    },
+    "/time/leavetypes": {
+      "get": {
+        "tags": [
+          "Leave"
+        ],
+        "summary": "Get all leave types",
+        "description": "Retrieves all configured leave types",
+        "operationId": "getAllLeaveTypes",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageNumber"
+          },
+          {
+            "$ref": "#/components/parameters/PageSize"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          }
+        }
+      }
+    },
+    "/time/leavebalance": {
+      "get": {
+        "tags": [
+          "Leave"
+        ],
+        "summary": "Get all leave balances",
+        "description": "Retrieves leave balances for employees",
+        "operationId": "getAllLeaveBalances",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageNumber"
+          },
+          {
+            "$ref": "#/components/parameters/PageSize"
+          },
+          {
+            "name": "employeeIds",
+            "in": "query",
+            "description": "Filter by specific employee IDs",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "leaveTypeIds",
+            "in": "query",
+            "description": "Filter by specific leave type IDs",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          }
+        }
+      }
+    },
+    "/time/leaverequests": {
+      "get": {
+        "tags": [
+          "Leave"
+        ],
+        "summary": "Get all leave requests",
+        "description": "Retrieves all leave requests",
+        "operationId": "getAllLeaveRequests",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageNumber"
+          },
+          {
+            "$ref": "#/components/parameters/PageSize"
+          },
+          {
+            "name": "employeeIds",
+            "in": "query",
+            "description": "Filter by specific employee IDs",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "leaveTypeIds",
+            "in": "query",
+            "description": "Filter by specific leave type IDs",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "startDate",
+            "in": "query",
+            "description": "Filter by start date",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "description": "Filter by end date",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Leave"
+        ],
+        "summary": "Create a leave request",
+        "description": "Creates a new leave request",
+        "operationId": "createLeaveRequest",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LeaveRequestCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Leave request created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          }
+        }
+      }
+    },
+    "/time/attendance": {
+      "get": {
+        "tags": [
+          "Attendance"
+        ],
+        "summary": "Get all attendance records",
+        "description": "Retrieves attendance records",
+        "operationId": "getAllAttendance",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageNumber"
+          },
+          {
+            "$ref": "#/components/parameters/PageSize"
+          },
+          {
+            "name": "employeeIds",
+            "in": "query",
+            "description": "Filter by specific employee IDs",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "startDate",
+            "in": "query",
+            "description": "Filter by start date",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "description": "Filter by end date",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          }
+        }
+      }
+    },
+    "/time/capturescheme": {
+      "get": {
+        "tags": [
+          "Attendance"
+        ],
+        "summary": "Get all capture schemes",
+        "description": "Retrieves all attendance capture schemes",
+        "operationId": "getAllCaptureSchemes",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageNumber"
+          },
+          {
+            "$ref": "#/components/parameters/PageSize"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          }
+        }
+      }
+    },
+    "/time/holidayscalendar": {
+      "get": {
+        "tags": [
+          "Attendance"
+        ],
+        "summary": "Get all holidays calendar",
+        "description": "Retrieves holiday calendar data",
+        "operationId": "getHolidaysCalendar",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageNumber"
+          },
+          {
+            "$ref": "#/components/parameters/PageSize"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          }
+        }
+      }
+    },
+    "/payroll/salarycomponents": {
+      "get": {
+        "tags": [
+          "Payroll"
+        ],
+        "summary": "Get all salary components",
+        "description": "Retrieves all salary components configured in the system",
+        "operationId": "getAllSalaryComponents",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageNumber"
+          },
+          {
+            "$ref": "#/components/parameters/PageSize"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          }
+        }
+      }
+    },
+    "/payroll/paygroups": {
+      "get": {
+        "tags": [
+          "Payroll"
+        ],
+        "summary": "Get all pay groups",
+        "description": "Retrieves all pay groups",
+        "operationId": "getAllPayGroups",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageNumber"
+          },
+          {
+            "$ref": "#/components/parameters/PageSize"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          }
+        }
+      }
+    },
+    "/payroll/paygroups/{payGroupId}/paycycles": {
+      "get": {
+        "tags": [
+          "Payroll"
+        ],
+        "summary": "Get all pay cycles",
+        "description": "Retrieves all pay cycles for a specific pay group",
+        "operationId": "getAllPayCycles",
+        "parameters": [
+          {
+            "name": "payGroupId",
+            "in": "path",
+            "required": true,
+            "description": "Pay Group ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/PageNumber"
+          },
+          {
+            "$ref": "#/components/parameters/PageSize"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          }
+        }
+      }
+    },
+    "/payroll/paygroups/{payGroupId}/paycycles/{payCycleId}/payregister": {
+      "get": {
+        "tags": [
+          "Payroll"
+        ],
+        "summary": "Get pay register",
+        "description": "Retrieves the pay register for a specific pay cycle",
+        "operationId": "getPayRegister",
+        "parameters": [
+          {
+            "name": "payGroupId",
+            "in": "path",
+            "required": true,
+            "description": "Pay Group ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "payCycleId",
+            "in": "path",
+            "required": true,
+            "description": "Pay Cycle ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          }
+        }
+      }
+    },
+    "/payroll/paygroups/{payGroupId}/paycycles/{payCycleId}/paybatches": {
+      "get": {
+        "tags": [
+          "Payroll"
+        ],
+        "summary": "Get all pay batches",
+        "description": "Retrieves all pay batches for a specific pay cycle",
+        "operationId": "getAllPayBatches",
+        "parameters": [
+          {
+            "name": "payGroupId",
+            "in": "path",
+            "required": true,
+            "description": "Pay Group ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "payCycleId",
+            "in": "path",
+            "required": true,
+            "description": "Pay Cycle ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/PageNumber"
+          },
+          {
+            "$ref": "#/components/parameters/PageSize"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          }
+        }
+      }
+    },
+    "/payroll/paygroups/{payGroupId}/paycycles/{payCycleId}/paybatches/{payBatchId}/payments": {
+      "get": {
+        "tags": [
+          "Payroll"
+        ],
+        "summary": "Get all batch payments",
+        "description": "Retrieves all payments for a specific pay batch",
+        "operationId": "getAllBatchPayments",
+        "parameters": [
+          {
+            "name": "payGroupId",
+            "in": "path",
+            "required": true,
+            "description": "Pay Group ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "payCycleId",
+            "in": "path",
+            "required": true,
+            "description": "Pay Cycle ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "payBatchId",
+            "in": "path",
+            "required": true,
+            "description": "Pay Batch ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/PageNumber"
+          },
+          {
+            "$ref": "#/components/parameters/PageSize"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Payroll"
+        ],
+        "summary": "Update payment status",
+        "description": "Updates the status of payments in a batch",
+        "operationId": "updatePaymentStatus",
+        "parameters": [
+          {
+            "name": "payGroupId",
+            "in": "path",
+            "required": true,
+            "description": "Pay Group ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "payCycleId",
+            "in": "path",
+            "required": true,
+            "description": "Pay Cycle ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "payBatchId",
+            "in": "path",
+            "required": true,
+            "description": "Pay Batch ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "paymentStatus": {
+                    "type": "string",
+                    "description": "New payment status"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Payment status updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          }
+        }
+      }
+    },
+    "/payroll/paygrades": {
+      "get": {
+        "tags": [
+          "Payroll"
+        ],
+        "summary": "Get all pay grades",
+        "description": "Retrieves all pay grades",
+        "operationId": "getAllPayGrades",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageNumber"
+          },
+          {
+            "$ref": "#/components/parameters/PageSize"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          }
+        }
+      }
+    },
+    "/payroll/paybands": {
+      "get": {
+        "tags": [
+          "Payroll"
+        ],
+        "summary": "Get all pay bands",
+        "description": "Retrieves all pay bands",
+        "operationId": "getAllPayBands",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageNumber"
+          },
+          {
+            "$ref": "#/components/parameters/PageSize"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          }
+        }
+      }
+    },
+    "/psa/clients": {
+      "get": {
+        "tags": [
+          "PSA - Clients"
+        ],
+        "summary": "Get all clients",
+        "description": "Retrieves all PSA clients",
+        "operationId": "getAllClients",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageNumber"
+          },
+          {
+            "$ref": "#/components/parameters/PageSize"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "PSA - Clients"
+        ],
+        "summary": "Create a client",
+        "description": "Creates a new PSA client",
+        "operationId": "createClient",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClientCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Client created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          }
+        }
+      }
+    },
+    "/psa/clients/{id}": {
+      "get": {
+        "tags": [
+          "PSA - Clients"
+        ],
+        "summary": "Get a client by ID",
+        "description": "Retrieves a specific client",
+        "operationId": "getClientById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Client ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "PSA - Clients"
+        ],
+        "summary": "Update a client",
+        "description": "Updates an existing client",
+        "operationId": "updateClient",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Client ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClientUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Client updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          }
+        }
+      }
+    },
+    "/psa/projects": {
+      "get": {
+        "tags": [
+          "PSA - Projects"
+        ],
+        "summary": "Get all projects",
+        "description": "Retrieves all PSA projects",
+        "operationId": "getAllProjects",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageNumber"
+          },
+          {
+            "$ref": "#/components/parameters/PageSize"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "PSA - Projects"
+        ],
+        "summary": "Create a project",
+        "description": "Creates a new PSA project",
+        "operationId": "createProject",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProjectCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Project created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          }
+        }
+      }
+    },
+    "/psa/projects/{id}": {
+      "get": {
+        "tags": [
+          "PSA - Projects"
+        ],
+        "summary": "Get a project by ID",
+        "description": "Retrieves a specific project",
+        "operationId": "getProjectById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Project ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "PSA - Projects"
+        ],
+        "summary": "Update a project",
+        "description": "Updates an existing project",
+        "operationId": "updateProject",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Project ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProjectUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Project updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          }
+        }
+      }
+    },
+    "/psa/projects/{id}/allocations": {
+      "get": {
+        "tags": [
+          "PSA - Projects"
+        ],
+        "summary": "Get project allocations",
+        "description": "Retrieves resource allocations for a specific project",
+        "operationId": "getProjectAllocations",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Project ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/PageNumber"
+          },
+          {
+            "$ref": "#/components/parameters/PageSize"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          }
+        }
+      }
+    },
+    "/psa/projects/{id}/timeentries": {
+      "get": {
+        "tags": [
+          "PSA - Projects"
+        ],
+        "summary": "Get project timesheet entries",
+        "description": "Retrieves timesheet entries for a specific project",
+        "operationId": "getProjectTimeEntries",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Project ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/PageNumber"
+          },
+          {
+            "$ref": "#/components/parameters/PageSize"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          }
+        }
+      }
+    },
+    "/psa/projects/{projectId}/phases": {
+      "get": {
+        "tags": [
+          "PSA - Projects"
+        ],
+        "summary": "Get project phases",
+        "description": "Retrieves phases for a specific project",
+        "operationId": "getProjectPhases",
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "description": "Project ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/PageNumber"
+          },
+          {
+            "$ref": "#/components/parameters/PageSize"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "PSA - Projects"
+        ],
+        "summary": "Create a project phase",
+        "description": "Creates a new phase for a project",
+        "operationId": "createProjectPhase",
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "description": "Project ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProjectPhaseCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Project phase created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          }
+        }
+      }
+    },
+    "/psa/projects/{projectId}/tasks": {
+      "get": {
+        "tags": [
+          "PSA - Tasks"
+        ],
+        "summary": "Get project tasks",
+        "description": "Retrieves tasks for a specific project",
+        "operationId": "getProjectTasks",
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "description": "Project ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/PageNumber"
+          },
+          {
+            "$ref": "#/components/parameters/PageSize"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "PSA - Tasks"
+        ],
+        "summary": "Create a task",
+        "description": "Creates a new task for a project",
+        "operationId": "createTask",
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "description": "Project ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaskCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Task created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          }
+        }
+      }
+    },
+    "/psa/projects/{projectId}/tasks/{taskId}": {
+      "put": {
+        "tags": [
+          "PSA - Tasks"
+        ],
+        "summary": "Update a task",
+        "description": "Updates an existing task",
+        "operationId": "updateTask",
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "description": "Project ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "taskId",
+            "in": "path",
+            "required": true,
+            "description": "Task ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaskUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Task updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          }
+        }
+      }
+    },
+    "/psa/projects/{projectId}/tasks/{taskId}/timeentries": {
+      "get": {
+        "tags": [
+          "PSA - Tasks"
+        ],
+        "summary": "Get task time entries",
+        "description": "Retrieves time entries for a specific task",
+        "operationId": "getTaskTimeEntries",
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "description": "Project ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "taskId",
+            "in": "path",
+            "required": true,
+            "description": "Task ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/PageNumber"
+          },
+          {
+            "$ref": "#/components/parameters/PageSize"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          }
+        }
+      }
+    },
+    "/pms/timeframes": {
+      "get": {
+        "tags": [
+          "PMS"
+        ],
+        "summary": "Get time frame list",
+        "description": "Retrieves all performance management time frames",
+        "operationId": "getAllTimeFrames",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageNumber"
+          },
+          {
+            "$ref": "#/components/parameters/PageSize"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          }
+        }
+      }
+    },
+    "/pms/goals": {
+      "get": {
+        "tags": [
+          "PMS"
+        ],
+        "summary": "Get goal list",
+        "description": "Retrieves all performance goals",
+        "operationId": "getAllGoals",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageNumber"
+          },
+          {
+            "$ref": "#/components/parameters/PageSize"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          }
+        }
+      }
+    },
+    "/pms/goals/{goalId}/progress": {
+      "put": {
+        "tags": [
+          "PMS"
+        ],
+        "summary": "Update goal progress",
+        "description": "Updates the progress of a specific goal",
+        "operationId": "updateGoalProgress",
+        "parameters": [
+          {
+            "name": "goalId",
+            "in": "path",
+            "required": true,
+            "description": "Goal ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "progress": {
+                    "type": "number",
+                    "description": "Progress percentage (0-100)"
+                  },
+                  "notes": {
+                    "type": "string",
+                    "description": "Progress notes"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Goal progress updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          }
+        }
+      }
+    },
+    "/pms/badges": {
+      "get": {
+        "tags": [
+          "PMS"
+        ],
+        "summary": "Get badge list",
+        "description": "Retrieves all performance badges",
+        "operationId": "getAllBadges",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageNumber"
+          },
+          {
+            "$ref": "#/components/parameters/PageSize"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          }
+        }
+      }
+    },
+    "/pms/praise": {
+      "post": {
+        "tags": [
+          "PMS"
+        ],
+        "summary": "Add praise",
+        "description": "Creates a new praise entry",
+        "operationId": "createPraise",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PraiseCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Praise created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          }
+        }
+      }
+    },
+    "/expense/categories": {
+      "get": {
+        "tags": [
+          "Expense"
+        ],
+        "summary": "Get all expense categories",
+        "description": "Retrieves all expense categories",
+        "operationId": "getAllExpenseCategories",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageNumber"
+          },
+          {
+            "$ref": "#/components/parameters/PageSize"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          }
+        }
+      }
+    },
+    "/expense/claims": {
+      "get": {
+        "tags": [
+          "Expense"
+        ],
+        "summary": "Get all expense claims",
+        "description": "Retrieves all expense claims",
+        "operationId": "getAllExpenseClaims",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageNumber"
+          },
+          {
+            "$ref": "#/components/parameters/PageSize"
+          },
+          {
+            "name": "employeeIds",
+            "in": "query",
+            "description": "Filter by specific employee IDs",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "startDate",
+            "in": "query",
+            "description": "Filter by start date",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "description": "Filter by end date",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          }
+        }
+      }
+    },
+    "/expensepolicies": {
+      "get": {
+        "tags": [
+          "Expense"
+        ],
+        "summary": "Get all expense policies",
+        "description": "Retrieves all expense policies",
+        "operationId": "getAllExpensePolicies",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageNumber"
+          },
+          {
+            "$ref": "#/components/parameters/PageSize"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          }
+        }
+      }
+    },
+    "/assets": {
+      "get": {
+        "tags": [
+          "Assets"
+        ],
+        "summary": "Get all assets",
+        "description": "Retrieves all company assets",
+        "operationId": "getAllAssets",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageNumber"
+          },
+          {
+            "$ref": "#/components/parameters/PageSize"
+          },
+          {
+            "name": "assetTypeIds",
+            "in": "query",
+            "description": "Filter by specific asset type IDs",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "lastModified",
+            "in": "query",
+            "description": "Filter by last modified date",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          }
+        }
+      }
+    },
+    "/assets/types": {
+      "get": {
+        "tags": [
+          "Assets"
+        ],
+        "summary": "Get all asset types",
+        "description": "Retrieves all asset types",
+        "operationId": "getAllAssetTypes",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageNumber"
+          },
+          {
+            "$ref": "#/components/parameters/PageSize"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          }
+        }
+      }
+    },
+    "/assets/categories": {
+      "get": {
+        "tags": [
+          "Assets"
+        ],
+        "summary": "Get all asset categories",
+        "description": "Retrieves all asset categories",
+        "operationId": "getAllAssetCategories",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageNumber"
+          },
+          {
+            "$ref": "#/components/parameters/PageSize"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          }
+        }
+      }
+    },
+    "/assets/conditions": {
+      "get": {
+        "tags": [
+          "Assets"
+        ],
+        "summary": "Get all asset conditions",
+        "description": "Retrieves all possible asset conditions",
+        "operationId": "getAllAssetConditions",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageNumber"
+          },
+          {
+            "$ref": "#/components/parameters/PageSize"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "OAuth2": {
+        "type": "oauth2",
+        "description": "OAuth 2.0 authentication",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://login.keka.com/connect/authorize",
+            "tokenUrl": "https://login.keka.com/connect/token",
+            "scopes": {
+              "kekaapi": "Access to Keka API",
+              "offline_access": "Refresh token access"
+            }
+          }
+        }
+      },
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key",
+        "description": "API Key authentication"
+      }
+    },
+    "parameters": {
+      "PageNumber": {
+        "name": "pageNumber",
+        "in": "query",
+        "description": "Page number for pagination (default: 1)",
+        "schema": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 1
+        }
+      },
+      "PageSize": {
+        "name": "pageSize",
+        "in": "query",
+        "description": "Number of items per page (default: 100)",
+        "schema": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 100
+        }
+      }
+    },
+    "responses": {
+      "Unauthorized": {
+        "description": "Unauthorized - Invalid or missing authentication credentials",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "BadRequest": {
+        "description": "Bad Request - Invalid input parameters",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "Not Found - Resource does not exist",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "RateLimitExceeded": {
+        "description": "Rate Limit Exceeded - Too many requests (50 requests per minute limit)",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "succeeded": {
+                  "type": "boolean",
+                  "example": false
+                },
+                "message": {
+                  "type": "string",
+                  "example": "Rate limit exceeded"
+                },
+                "reason": {
+                  "type": "string",
+                  "example": "rateLimitExceeded"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "ApiResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object",
+            "description": "Response data"
+          },
+          "succeeded": {
+            "type": "boolean",
+            "description": "Indicates if the request was successful"
+          },
+          "message": {
+            "type": "string",
+            "description": "Response message"
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of errors if any"
+          }
+        }
+      },
+      "PagedResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            },
+            "description": "Array of data items"
+          },
+          "pageNumber": {
+            "type": "integer",
+            "description": "Current page number"
+          },
+          "pageSize": {
+            "type": "integer",
+            "description": "Number of items per page"
+          },
+          "totalPages": {
+            "type": "integer",
+            "description": "Total number of pages"
+          },
+          "totalRecords": {
+            "type": "integer",
+            "description": "Total number of records"
+          },
+          "succeeded": {
+            "type": "boolean",
+            "description": "Indicates if the request was successful"
+          },
+          "message": {
+            "type": "string",
+            "description": "Response message"
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "succeeded": {
+            "type": "boolean",
+            "example": false
+          },
+          "message": {
+            "type": "string",
+            "description": "Error message"
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Detailed error messages"
+          }
+        }
+      },
+      "Employee": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Employee ID"
+          },
+          "employeeCode": {
+            "type": "string",
+            "description": "Employee code"
+          },
+          "firstName": {
+            "type": "string",
+            "description": "First name"
+          },
+          "lastName": {
+            "type": "string",
+            "description": "Last name"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "Email address"
+          },
+          "phoneNumber": {
+            "type": "string",
+            "description": "Phone number"
+          },
+          "dateOfBirth": {
+            "type": "string",
+            "format": "date",
+            "description": "Date of birth"
+          },
+          "dateOfJoining": {
+            "type": "string",
+            "format": "date",
+            "description": "Date of joining"
+          },
+          "departmentId": {
+            "type": "string",
+            "description": "Department ID"
+          },
+          "locationId": {
+            "type": "string",
+            "description": "Location ID"
+          },
+          "jobTitleId": {
+            "type": "string",
+            "description": "Job title ID"
+          },
+          "managerId": {
+            "type": "string",
+            "description": "Manager ID"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "Active",
+              "Inactive",
+              "Terminated"
+            ],
+            "description": "Employment status"
+          }
+        }
+      },
+      "EmployeeCreate": {
+        "type": "object",
+        "required": [
+          "firstName",
+          "lastName",
+          "email",
+          "dateOfJoining"
+        ],
+        "properties": {
+          "employeeCode": {
+            "type": "string",
+            "description": "Employee code"
+          },
+          "firstName": {
+            "type": "string",
+            "description": "First name"
+          },
+          "lastName": {
+            "type": "string",
+            "description": "Last name"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "Email address"
+          },
+          "phoneNumber": {
+            "type": "string",
+            "description": "Phone number"
+          },
+          "dateOfBirth": {
+            "type": "string",
+            "format": "date",
+            "description": "Date of birth"
+          },
+          "dateOfJoining": {
+            "type": "string",
+            "format": "date",
+            "description": "Date of joining"
+          },
+          "departmentId": {
+            "type": "string",
+            "description": "Department ID"
+          },
+          "locationId": {
+            "type": "string",
+            "description": "Location ID"
+          },
+          "jobTitleId": {
+            "type": "string",
+            "description": "Job title ID"
+          },
+          "managerId": {
+            "type": "string",
+            "description": "Manager ID"
+          }
+        }
+      },
+      "EmployeeListResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/PagedResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Employee"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "EmployeePersonalDetails": {
+        "type": "object",
+        "properties": {
+          "firstName": {
+            "type": "string",
+            "description": "First name"
+          },
+          "lastName": {
+            "type": "string",
+            "description": "Last name"
+          },
+          "dateOfBirth": {
+            "type": "string",
+            "format": "date",
+            "description": "Date of birth"
+          },
+          "phoneNumber": {
+            "type": "string",
+            "description": "Phone number"
+          },
+          "address": {
+            "type": "object",
+            "properties": {
+              "street": {
+                "type": "string"
+              },
+              "city": {
+                "type": "string"
+              },
+              "state": {
+                "type": "string"
+              },
+              "postalCode": {
+                "type": "string"
+              },
+              "country": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "EmployeeJobDetails": {
+        "type": "object",
+        "properties": {
+          "departmentId": {
+            "type": "string",
+            "description": "Department ID"
+          },
+          "locationId": {
+            "type": "string",
+            "description": "Location ID"
+          },
+          "jobTitleId": {
+            "type": "string",
+            "description": "Job title ID"
+          },
+          "managerId": {
+            "type": "string",
+            "description": "Manager ID"
+          },
+          "dateOfJoining": {
+            "type": "string",
+            "format": "date",
+            "description": "Date of joining"
+          },
+          "employmentType": {
+            "type": "string",
+            "description": "Employment type"
+          }
+        }
+      },
+      "LeaveRequestCreate": {
+        "type": "object",
+        "required": [
+          "employeeId",
+          "leaveTypeId",
+          "startDate",
+          "endDate"
+        ],
+        "properties": {
+          "employeeId": {
+            "type": "string",
+            "description": "Employee ID"
+          },
+          "leaveTypeId": {
+            "type": "string",
+            "description": "Leave type ID"
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date",
+            "description": "Leave start date"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date",
+            "description": "Leave end date"
+          },
+          "reason": {
+            "type": "string",
+            "description": "Reason for leave"
+          },
+          "halfDay": {
+            "type": "boolean",
+            "description": "Whether it's a half-day leave"
+          }
+        }
+      },
+      "ClientCreate": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Client name"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "Client email"
+          },
+          "phoneNumber": {
+            "type": "string",
+            "description": "Client phone number"
+          },
+          "address": {
+            "type": "string",
+            "description": "Client address"
+          },
+          "website": {
+            "type": "string",
+            "description": "Client website"
+          }
+        }
+      },
+      "ClientUpdate": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Client name"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "Client email"
+          },
+          "phoneNumber": {
+            "type": "string",
+            "description": "Client phone number"
+          },
+          "address": {
+            "type": "string",
+            "description": "Client address"
+          },
+          "website": {
+            "type": "string",
+            "description": "Client website"
+          }
+        }
+      },
+      "ProjectCreate": {
+        "type": "object",
+        "required": [
+          "name",
+          "clientId"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Project name"
+          },
+          "description": {
+            "type": "string",
+            "description": "Project description"
+          },
+          "clientId": {
+            "type": "string",
+            "description": "Client ID"
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date",
+            "description": "Project start date"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date",
+            "description": "Project end date"
+          },
+          "status": {
+            "type": "string",
+            "description": "Project status"
+          }
+        }
+      },
+      "ProjectUpdate": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Project name"
+          },
+          "description": {
+            "type": "string",
+            "description": "Project description"
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date",
+            "description": "Project start date"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date",
+            "description": "Project end date"
+          },
+          "status": {
+            "type": "string",
+            "description": "Project status"
+          }
+        }
+      },
+      "ProjectPhaseCreate": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Phase name"
+          },
+          "description": {
+            "type": "string",
+            "description": "Phase description"
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date",
+            "description": "Phase start date"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date",
+            "description": "Phase end date"
+          }
+        }
+      },
+      "TaskCreate": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Task name"
+          },
+          "description": {
+            "type": "string",
+            "description": "Task description"
+          },
+          "assigneeId": {
+            "type": "string",
+            "description": "Assignee employee ID"
+          },
+          "dueDate": {
+            "type": "string",
+            "format": "date",
+            "description": "Task due date"
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "Low",
+              "Medium",
+              "High"
+            ],
+            "description": "Task priority"
+          }
+        }
+      },
+      "TaskUpdate": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Task name"
+          },
+          "description": {
+            "type": "string",
+            "description": "Task description"
+          },
+          "assigneeId": {
+            "type": "string",
+            "description": "Assignee employee ID"
+          },
+          "dueDate": {
+            "type": "string",
+            "format": "date",
+            "description": "Task due date"
+          },
+          "status": {
+            "type": "string",
+            "description": "Task status"
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "Low",
+              "Medium",
+              "High"
+            ],
+            "description": "Task priority"
+          }
+        }
+      },
+      "PraiseCreate": {
+        "type": "object",
+        "required": [
+          "employeeId",
+          "message"
+        ],
+        "properties": {
+          "employeeId": {
+            "type": "string",
+            "description": "Employee ID being praised"
+          },
+          "message": {
+            "type": "string",
+            "description": "Praise message"
+          },
+          "badgeId": {
+            "type": "string",
+            "description": "Badge ID to award (optional)"
+          }
+        }
+      }
+    }
+  }
+}
